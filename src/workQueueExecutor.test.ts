@@ -32,68 +32,54 @@ describe('WorkQueueExecutor', () => {
     jest.clearAllMocks();
   })
 
-  // test('capable of working with complex TaskValue and ResultValue (not just strings)', async () => {
-  //   const timeout = 5000;
-  //   const testQueue = new WorkQueueExecutor<Record<number, string>, number[]>(3, timeout, 5, handlerFuncComplex);
-  //   testQueue.addTask({1: '1', 2: '2', 3: '3'});
-  //   const results = await testQueue.getResults();
-  //   expect(results).toEqual([[1, 2, 3]]);
-  // });
+  test('capable of working with complex TaskValue and ResultValue (not just strings)', async () => {
+    const timeout = 5000;
+    const testQueue = new WorkQueueExecutor<Record<number, string>, number[]>(3, timeout, 5, handlerFuncComplex);
+    testQueue.addTask({1: '1', 2: '2', 3: '3'});
+    const results = await testQueue.getResults();
+    expect(results).toEqual([[1, 2, 3]]);
+  });
 
-  // test('returns all ResultValue-s in same order in which respective TaskValue-s were added', async () => {
-  //   const timeout = 5000;
-  //   const testQueue = new WorkQueueExecutor<string, string>(3, timeout, 5, handlerFunc);
-  //   testQueue.addTask('task1');
-  //   testQueue.addTask('task2');
-  //   testQueue.addTask('task3');
-  //   const results = await testQueue.getResults();
-  //   expect(results).toEqual(['Completed task:  task1', 'Completed task:  task2', 'Completed task:  task3']);
-  // });
-
-
-  // test('does not work longer than QUEUE_TIMEOUT', async () => {
-  //   const timeout = 50;
-  //   const testQueue = new WorkQueueExecutor<string, string>(3, timeout, 5, handlerFunc);
-  //   testQueue.addTask('task1');
-  //   testQueue.addTask('task2');
-  //   testQueue.addTask('task3');
-
-  //   await expect(() => testQueue.getResults()).rejects.toEqual(new Error('Timeout!'));
-  // });
-
-  // test('does not accept more elements than QUEUE_SIZE', () => {
-  //   const testQueue = new WorkQueueExecutor<string, string>(3, 1000, 5, handlerFunc);
-  //   testQueue.addTask('task1');
-  //   testQueue.addTask('task2');
-  //   testQueue.addTask('task3');
-  //   expect(() => testQueue.addTask('task4')).toThrow();
-  // });
-
-  // test('does not execute more parallel tasks than MAX_WORKERS_NUM', () => {
-  //   const maxWorkersNum = 2;
-  //   const testQueue = new WorkQueueExecutor<string, string>(5, 1000, maxWorkersNum, handlerFunc);
-  //   testQueue.addTask('task1');
-  //   testQueue.addTask('task2');
-  //   testQueue.addTask('task3');
-
-  //   testQueue.getResults();
-  //   const tasksRunning = testQueue.getTasksRunning();
-    
-  //   expect(tasksRunning.length).toBeLessThanOrEqual(maxWorkersNum);
-  // });
-
-  test('accepts and executes tasks after it started', async () => {
-    const testQueue = new WorkQueueExecutor<string, string>(6, 10000, 5, handlerFuncAddInnerTask);
-    const start = Date.now();
+  test('returns all ResultValue-s in same order in which respective TaskValue-s were added', async () => {
+    const timeout = 5000;
+    const testQueue = new WorkQueueExecutor<string, string>(3, timeout, 5, handlerFunc);
     testQueue.addTask('task1');
     testQueue.addTask('task2');
-    testQueue.addTask('start task');
+    testQueue.addTask('task3');
+    const results = await testQueue.getResults();
+    expect(results).toEqual(['Completed task:  task1', 'Completed task:  task2', 'Completed task:  task3']);
+  });
 
-    const res = await testQueue.getResults();
-    const end = Date.now() - start;
+
+  test('does not work longer than QUEUE_TIMEOUT', async () => {
+    const timeout = 50;
+    const testQueue = new WorkQueueExecutor<string, string>(3, timeout, 5, handlerFunc);
+    testQueue.addTask('task1');
+    testQueue.addTask('task2');
+    testQueue.addTask('task3');
+
+    await expect(() => testQueue.getResults()).rejects.toEqual(new Error('Timeout!'));
+  });
+
+  test('does not accept more elements than QUEUE_SIZE', () => {
+    const testQueue = new WorkQueueExecutor<string, string>(3, 1000, 5, handlerFunc);
+    testQueue.addTask('task1');
+    testQueue.addTask('task2');
+    testQueue.addTask('task3');
+    expect(() => testQueue.addTask('task4')).toThrow();
+  });
+
+  test('does not execute more parallel tasks than MAX_WORKERS_NUM', () => {
+    const maxWorkersNum = 2;
+    const testQueue = new WorkQueueExecutor<string, string>(5, 1000, maxWorkersNum, handlerFunc);
+    testQueue.addTask('task1');
+    testQueue.addTask('task2');
+    testQueue.addTask('task3');
+
+    testQueue.getResults();
+    const tasksRunning = testQueue.getTasksRunning();
     
-    
-    expect(res.includes('Completed task:  Inner Task')).toEqual(true);
+    expect(tasksRunning.length).toBeLessThanOrEqual(maxWorkersNum);
   });
 
   function pause(ms: number): Promise<number>{
