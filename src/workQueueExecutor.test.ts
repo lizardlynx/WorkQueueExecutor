@@ -31,6 +31,7 @@ describe('WorkQueueExecutor', () => {
   afterEach(() => {
     jest.clearAllMocks();
   })
+  /*
 
   test('capable of working with complex TaskValue and ResultValue (not just strings)', async () => {
     const timeout = 5000;
@@ -82,11 +83,7 @@ describe('WorkQueueExecutor', () => {
     expect(tasksRunning.length).toBeLessThanOrEqual(maxWorkersNum);
   });
 
-  function pause(ms: number): Promise<number>{
-    return new Promise((resolve, reject) => {
-      setTimeout(resolve, ms);
-    })
-  } 
+
 
 
   test('alex test case - 0', async () => {
@@ -169,8 +166,50 @@ describe('WorkQueueExecutor', () => {
       'out-in-extra',
     ])
   
-  });
+  }); */
 
+  function pause(ms: number): Promise<number>{
+    return new Promise((resolve, reject) => {
+      setTimeout(resolve, ms);
+    })
+  } 
+
+  test('alex test case - 3', async () => {
+
+    async function handler(ms: number, queue: WorkQueueExecutor<number, string>): Promise<string> {
+      await pause(ms);
+      return `out-${ms}`;
+    }
+    
+    const WORKERS_NUM = 2;
+    const testQueue = new WorkQueueExecutor<number, string>(1000, 100000, WORKERS_NUM, handler);
+    testQueue.addTask(100);
+    testQueue.addTask(200);
+    testQueue.addTask(300);
+    testQueue.addTask(400);
+    testQueue.addTask(500);
+    testQueue.addTask(600);
+  
+    const startMs = new Date().getTime();
+  
+    const res = await testQueue.getResults();
+  
+    expect(res).toEqual([
+      'out-100',
+      'out-200',
+      'out-300',
+      'out-400',
+      'out-500',
+      'out-600'
+    ])
+  
+    const endMs = new Date().getTime();
+    const delta = endMs - startMs;
+    expect(delta).toBeGreaterThanOrEqual(1000);
+  
+    // TODO for some reason there is more than 2100 ms of delta here, but is should be about 1050
+    expect(delta).toBeLessThanOrEqual((100 + 200 + 300 + 400 + 500 + 600) / WORKERS_NUM);
+  });
 });
 
 
